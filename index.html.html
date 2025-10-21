@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Il nostro viaggio di nozze – Tanzania e Zanzibar</title>
+
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      background-color: #fffaf2;
+      color: #3a2f20;
+    }
+
+    header {
+      text-align: center;
+      padding: 4rem 1rem;
+      background: linear-gradient(to bottom right, #d6b977, #a67b3b);
+      color: white;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      font-size: 1.2rem;
+    }
+
+    section {
+      max-width: 900px;
+      margin: 3rem auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .image-container {
+      width: 100%;
+      height: 300px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .content {
+      padding: 2rem;
+    }
+
+    .content h2 {
+      color: #8a6223;
+      margin-top: 0;
+    }
+
+    .gift-btn {
+      background-color: #a67b3b;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .gift-btn:hover {
+      background-color: #8a6223;
+    }
+
+    .counter {
+      margin-top: 0.5rem;
+      font-weight: bold;
+      color: #4f772d;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .thank-you-box {
+      background: #fffaf2;
+      padding: 2rem;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .thank-you-box h2 {
+      color: #8a6223;
+    }
+
+    .thank-you-box p {
+      margin: 1rem 0;
+    }
+
+    .close-btn {
+      background-color: #a67b3b;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: #8a6223;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Il nostro viaggio di nozze</h1>
+    <p>Tanzania e Zanzibar</p>
+  </header>
+
+  <section>
+    <div class="image-container" style="background-image: url('https://images.unsplash.com/photo-1587393678301-80d97d9a4f09?auto=format&fit=crop&w=1000&q=80');"></div>
+    <div class="content">
+      <h2>🌿 Notte nella giungla</h2>
+      <p>Un’esperienza immersiva nel cuore della natura africana, tra suoni, stelle e profumi esotici.</p>
+      <button class="gift-btn" onclick="giveGift('jungla', 'Notte nella giungla')">Regala</button>
+      <p class="counter" id="counter-jungla">Contributi ricevuti: 0</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="image-container" style="background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80');"></div>
+    <div class="content">
+      <h2>🏝️ Notte in resort a Zanzibar</h2>
+      <p>Relax, tramonti e mare cristallino in un resort da sogno sulla spiaggia di Zanzibar.</p>
+      <button class="gift-btn" onclick="giveGift('zanzibar', 'Notte in resort a Zanzibar')">Regala</button>
+      <p class="counter" id="counter-zanzibar">Contributi ricevuti: 0</p>
+    </div>
+  </section>
+
+  <!-- Schermata ringraziamento -->
+  <div id="overlay" class="overlay">
+    <div class="thank-you-box">
+      <h2>Grazie per il tuo regalo! 💛</h2>
+      <p id="gift-text"></p>
+      <p>Puoi contribuire al viaggio tramite il seguente IBAN:</p>
+      <p><strong>IT12A3456789012345678901234</strong></p>
+      <button class="close-btn" onclick="closeOverlay()">Chiudi</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>Con amore, Miria & Alessandro</p>
+  </footer>
+
+  <script type="module">
+    // Import Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDXK0cWG9zCQneA8eHN8vfcUhKkWZet7co",
+      authDomain: "viaggio-di-nozze-dc2a1.firebaseapp.com",
+      databaseURL: "https://viaggio-di-nozze-dc2a1-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "viaggio-di-nozze-dc2a1",
+      storageBucket: "viaggio-di-nozze-dc2a1.firebasestorage.app",
+      messagingSenderId: "1069779781299",
+      appId: "1:1069779781299:web:a2a68261c94b45919ed2c6"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Funzioni del sito
+    function giveGift(id, giftName) {
+      const counterRef = ref(db, id);
+      runTransaction(counterRef, current => (current || 0) + 1);
+      document.getElementById('gift-text').innerText = `Hai scelto: ${giftName}`;
+      document.getElementById('overlay').style.display = 'flex';
+    }
+
+    onValue(ref(db, "jungla"), snapshot => {
+      document.getElementById("counter-jungla").innerText =
+        `Contributi ricevuti: ${snapshot.val() || 0}`;
+    });
+
+    onValue(ref(db, "zanzibar"), snapshot => {
+      document.getElementById("counter-zanzibar").innerText =
+        `Contributi ricevuti: ${snapshot.val() || 0}`;
+    });
+
+    function closeOverlay() {
+      document.getElementById('overlay').style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>
